@@ -47,6 +47,9 @@ private:
     QSortFilterProxyModel *m_proxyModel; // Proxy model za filtriranje
     ContactStoreForm *m_contactStoreForm;
     OProgramu *m_oProgramuForm;
+
+    void logError(const QString &message);
+
 };
 
 #endif // EASYCONTACTS_H

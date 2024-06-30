@@ -29,7 +29,6 @@ EasyContacts::EasyContacts(QWidget *parent)
 
     // Povezivanje signala selekcije tabele sa slotom
     connect(ui->tableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &EasyContacts::onSelectionChanged);
-
 }
 
 EasyContacts::~EasyContacts() {
@@ -132,92 +131,104 @@ void EasyContacts::on_pushButton_obrisati_clicked()
 
 
 void EasyContacts::on_actionIzvoz_triggered() {
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Izvoz kontakata"), "", tr("vCard datoteke (*.vcf)"));
-    if (fileName.isEmpty()) {
-        return;
-    }
+    try {
+        QString fileName = QFileDialog::getSaveFileName(this, tr("Izvoz kontakata"), "", tr("vCard datoteke (*.vcf)"));
+        if (fileName.isEmpty()) {
+            return;
+        }
 
-    QFile file(fileName);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QMessageBox::warning(this, tr("Greška"), tr("Ne mogu otvoriti datoteku za pisanje: ") + file.errorString());
-        return;
-    }
+        QFile file(fileName);
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            QMessageBox::warning(this, tr("Greška"), tr("Ne mogu otvoriti datoteku za pisanje: ") + file.errorString());
+            return;
+        }
 
-    QTextStream out(&file);
-    for (int row = 0; row < m_contactModel->m_model->rowCount(); ++row) {
-        out << "BEGIN:VCARD\n";
-        out << "VERSION:3.0\n";
-        out << "FN:" << m_contactModel->m_model->data(m_contactModel->m_model->index(row, 1)).toString() << " " << m_contactModel->m_model->data(m_contactModel->m_model->index(row, 2)).toString() << "\n";
-        out << "EMAIL:" << m_contactModel->m_model->data(m_contactModel->m_model->index(row, 3)).toString() << "\n";
-        out << "TEL:" << m_contactModel->m_model->data(m_contactModel->m_model->index(row, 4)).toString() << "\n";
-        out << "ADR:" << m_contactModel->m_model->data(m_contactModel->m_model->index(row, 5)).toString() << ";" << m_contactModel->m_model->data(m_contactModel->m_model->index(row, 6)).toString() << ";" << m_contactModel->m_model->data(m_contactModel->m_model->index(row, 7)).toString() << ";" << m_contactModel->m_model->data(m_contactModel->m_model->index(row, 8)).toString() << "\n";
-        out << "END:VCARD\n";
-    }
+        QTextStream out(&file);
+        for (int row = 0; row < m_contactModel->m_model->rowCount(); ++row) {
+            out << "BEGIN:VCARD\n";
+            out << "VERSION:3.0\n";
+            out << "FN:" << m_contactModel->m_model->data(m_contactModel->m_model->index(row, 1)).toString() << " " << m_contactModel->m_model->data(m_contactModel->m_model->index(row, 2)).toString() << "\n";
+            out << "EMAIL:" << m_contactModel->m_model->data(m_contactModel->m_model->index(row, 3)).toString() << "\n";
+            out << "TEL:" << m_contactModel->m_model->data(m_contactModel->m_model->index(row, 4)).toString() << "\n";
+            out << "ADR:" << m_contactModel->m_model->data(m_contactModel->m_model->index(row, 5)).toString() << ";" << m_contactModel->m_model->data(m_contactModel->m_model->index(row, 6)).toString() << ";" << m_contactModel->m_model->data(m_contactModel->m_model->index(row, 7)).toString() << ";" << m_contactModel->m_model->data(m_contactModel->m_model->index(row, 8)).toString() << "\n";
+            out << "END:VCARD\n";
+        }
 
-    file.close();
+        file.close();
     QMessageBox::information(this, tr("Izvoz završen"), tr("Kontakti su uspješno izvezeni u vCard format."));
+    } catch (const std::exception &e) {
+        QMessageBox::critical(this, tr("Greška"), tr(e.what()));
+        qDebug() << "Izuzetak uhvaćen:" << e.what();
+        logError("Izuzetak uhvaćen: " + QString::fromStdString(e.what()));
+    }
 }
 
 void EasyContacts::on_actionUvoz_triggered() {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Uvoz kontakata"), "", tr("vCard datoteke (*.vcf)"));
-    if (fileName.isEmpty()) {
-        return;
-    }
+    try {
+        QString fileName = QFileDialog::getOpenFileName(this, tr("Uvoz kontakata"), "", tr("vCard datoteke (*.vcf)"));
+        if (fileName.isEmpty()) {
+            return;
+        }
 
-    QFile file(fileName);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QMessageBox::warning(this, tr("Greška"), tr("Ne mogu otvoriti datoteku za čitanje: ") + file.errorString());
-        return;
-    }
+        QFile file(fileName);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QMessageBox::warning(this, tr("Greška"), tr("Ne mogu otvoriti datoteku za čitanje: ") + file.errorString());
+            return;
+        }
 
-    QTextStream in(&file);
-    QSqlQuery query;
-    query.prepare("INSERT INTO contacts (firstName, lastName, email, phone, address, city, state, zipCode) "
-                  "VALUES (:firstName, :lastName, :email, :phone, :address, :city, :state, :zipCode)");
+        QTextStream in(&file);
+        QSqlQuery query;
+        query.prepare("INSERT INTO contacts (firstName, lastName, email, phone, address, city, state, zipCode) "
+                      "VALUES (:firstName, :lastName, :email, :phone, :address, :city, :state, :zipCode)");
 
-    QString firstName, lastName, email, phone, address, city, state, zipCode;
-    while (!in.atEnd()) {
-        QString line = in.readLine();
-        if (line.startsWith("FN:")) {
-            QStringList nameParts = line.mid(3).split(" ");
-            if (nameParts.size() >= 2) {
-                firstName = nameParts.at(0);
-                lastName = nameParts.at(1);
-            } else if (nameParts.size() == 1) {
-                firstName = nameParts.at(0);
-                lastName = "";
-            }
-        } else if (line.startsWith("EMAIL:")) {
-            email = line.mid(6);
-        } else if (line.startsWith("TEL:")) {
-            phone = line.mid(4);
-        } else if (line.startsWith("ADR:")) {
-            QStringList addressParts = line.mid(4).split(";");
-            if (addressParts.size() >= 4) {
-                address = addressParts.at(0);
-                city = addressParts.at(1);
-                state = addressParts.at(2);
-                zipCode = addressParts.at(3);
-            }
-        } else if (line.startsWith("END:VCARD")) {
-            query.bindValue(":firstName", firstName);
-            query.bindValue(":lastName", lastName);
-            query.bindValue(":email", email);
-            query.bindValue(":phone", phone);
-            query.bindValue(":address", address);
-            query.bindValue(":city", city);
-            query.bindValue(":state", state);
-            query.bindValue(":zipCode", zipCode);
-            if (!query.exec()) {
-                QMessageBox::critical(this, tr("Greška"), tr("Neuspješan unos kontakta: ") + query.lastError().text());
-                return;
+        QString firstName, lastName, email, phone, address, city, state, zipCode;
+        while (!in.atEnd()) {
+            QString line = in.readLine();
+            if (line.startsWith("FN:")) {
+                QStringList nameParts = line.mid(3).split(" ");
+                if (nameParts.size() >= 2) {
+                    firstName = nameParts.at(0);
+                    lastName = nameParts.at(1);
+                } else if (nameParts.size() == 1) {
+                    firstName = nameParts.at(0);
+                    lastName = "";
+                }
+            } else if (line.startsWith("EMAIL:")) {
+                email = line.mid(6);
+            } else if (line.startsWith("TEL:")) {
+                phone = line.mid(4);
+            } else if (line.startsWith("ADR:")) {
+                QStringList addressParts = line.mid(4).split(";");
+                if (addressParts.size() >= 4) {
+                    address = addressParts.at(0);
+                    city = addressParts.at(1);
+                    state = addressParts.at(2);
+                    zipCode = addressParts.at(3);
+                }
+            } else if (line.startsWith("END:VCARD")) {
+                query.bindValue(":firstName", firstName);
+                query.bindValue(":lastName", lastName);
+                query.bindValue(":email", email);
+                query.bindValue(":phone", phone);
+                query.bindValue(":address", address);
+                query.bindValue(":city", city);
+                query.bindValue(":state", state);
+                query.bindValue(":zipCode", zipCode);
+                if (!query.exec()) {
+                    QMessageBox::critical(this, tr("Greška"), tr("Neuspješan unos kontakta: ") + query.lastError().text());
+                    return;
+                }
             }
         }
-    }
 
-    file.close();
-    m_contactModel->loadContacts();
-    QMessageBox::information(this, tr("Uvoz završen"), tr("Kontakti su uspješno uvezeni iz vCard formata."));
+        file.close();
+        m_contactModel->loadContacts();
+        QMessageBox::information(this, tr("Uvoz završen"), tr("Kontakti su uspješno uvezeni iz vCard formata."));
+    } catch (const std::exception &e) {
+        QMessageBox::critical(this, tr("Greška"), tr(e.what()));
+        qDebug() << "Izuzetak uhvaćen:" << e.what();
+        logError("Izuzetak uhvaćen: " + QString::fromStdString(e.what()));
+    }
 }
 
 
@@ -281,4 +292,14 @@ void EasyContacts::on_actionDokumentacija_triggered()
     QUrl url("https://maniaba.github.io/EasyContacts");
     QDesktopServices::openUrl(url);
 }
+
+void EasyContacts::logError(const QString &message) {
+    QFile file("error_log.txt");
+    if (file.open(QIODevice::Append | QIODevice::Text)) {
+        QTextStream out(&file);
+        out << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss") << ": " << message << "\n";
+        file.close();
+    }
+}
+
 

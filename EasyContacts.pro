@@ -1,4 +1,4 @@
-QT += core gui widgets sql
+QT += core gui widgets sql testlib
 
 # Set the project name
 TARGET = ContactManager
@@ -36,3 +36,4 @@ FORMS += \
 # Additional configurations (e.g., include paths, libraries)
 # INCLUDEPATH += libs/third_party_library/include
 # LIBS += -Llibs/third_party_library/lib -lthird_party_library
+

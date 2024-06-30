@@ -22,8 +22,6 @@ public:
 private slots:
     void onAccept();
 
-    void on_buttonBox_accepted();
-
 private:
     bool validateInput();
     void clearInputs();
