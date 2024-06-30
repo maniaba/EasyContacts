@@ -1,4 +1,4 @@
-#include "easycontacts.h"
+#include "src/Forms/easycontacts.h"
 
 #include <QApplication>
 
