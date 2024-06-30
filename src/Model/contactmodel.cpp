@@ -4,12 +4,13 @@
 #include "qsqlquery.h"
 #include <QSqlError>
 #include <QDebug>
+#include <QSortFilterProxyModel>
 
 ContactModel::ContactModel(QObject *parent)
-    : QObject(parent), m_tableView(nullptr), m_model(new QSqlTableModel(this, DatabaseManager::getDatabase())) {
+    : QObject(parent), m_model(new QSqlTableModel(this, DatabaseManager::getDatabase())), m_tableView(nullptr) {
 }
 
-void ContactModel::setupTableView(QTableView *tableView) {
+void ContactModel::setupTableView(QTableView *tableView, QSortFilterProxyModel *m_proxyModel) {
     m_tableView = tableView;
 
     // Isključivanje vertikalnih zaglavlja
@@ -31,6 +32,13 @@ void ContactModel::setupTableView(QTableView *tableView) {
     }
 
 
+    // Poveži model sa proxy modelom
+    m_proxyModel->setSourceModel(m_model); // Koristi m_contactModel direktno
+    m_proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive); // Postavi osjetljivost na velika/mala slova
+
+    // Poveži proxy model sa table view
+    m_tableView->setModel(m_proxyModel);
+
 
     m_model->setHeaderData(1, Qt::Horizontal, tr("First Name"));
     m_model->setHeaderData(2, Qt::Horizontal, tr("Last Name"));
@@ -42,7 +50,7 @@ void ContactModel::setupTableView(QTableView *tableView) {
     m_model->setHeaderData(8, Qt::Horizontal, tr("Zip Code"));
 
 
-    m_tableView->setModel(m_model);
+    m_tableView->setModel(m_proxyModel);
 
 
     m_tableView->setColumnHidden(m_model->fieldIndex("id"), true);

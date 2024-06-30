@@ -3,18 +3,19 @@
 
 #include <QObject>
 #include <QSqlTableModel>
+#include <QSortFilterProxyModel>
 #include <QTableView>
 
 class ContactModel : public QObject {
     Q_OBJECT
 public:
     explicit ContactModel(QObject *parent = nullptr);
-    void setupTableView(QTableView *tableView);
+    void setupTableView(QTableView *tableView, QSortFilterProxyModel *m_proxyModel);
     void loadContacts();
+    QSqlTableModel *m_model;
 
 private:
     QTableView *m_tableView;
-    QSqlTableModel *m_model;
 };
 
 #endif // CONTACTMODEL_H

@@ -10,6 +10,7 @@ CONFIG += c++11
 # Source files
 SOURCES += \
     src/Forms/contactstoreform.cpp \
+    src/Forms/oprogramu.cpp \
     src/Model/contactmodel.cpp \
     src/main.cpp \
     src/Forms/easycontacts.cpp \
@@ -24,11 +25,13 @@ HEADERS += \
     src/Entity/contact.h \
     src/Database/databasemanager.h \
     src/Database/schemamanager.h \
+    src/Forms/oprogramu.h \
     src/Model/contactmodel.h
 # UI files
 FORMS += \
     src/Forms/contactstoreform.ui \
-    src/Forms/easycontacts.ui
+    src/Forms/easycontacts.ui \
+    src/Forms/oprogramu.ui
 
 # Additional configurations (e.g., include paths, libraries)
 # INCLUDEPATH += libs/third_party_library/include

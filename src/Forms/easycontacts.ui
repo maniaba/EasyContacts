@@ -24,7 +24,7 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="QLineEdit" name="lineEdit"/>
+       <widget class="QLineEdit" name="lineEdit_pretraga"/>
       </item>
       <item>
        <widget class="QPushButton" name="pushButton_uredi">
@@ -78,9 +78,10 @@
     <property name="title">
      <string>Pomoć</string>
     </property>
-    <addaction name="actionGeneri_i_Demo_podatke"/>
     <addaction name="actionO_programu"/>
     <addaction name="actionDokumentacija"/>
+    <addaction name="separator"/>
+    <addaction name="actionGeneri_i_Demo_podatke"/>
    </widget>
    <widget class="QMenu" name="menuKontakti">
     <property name="title">
