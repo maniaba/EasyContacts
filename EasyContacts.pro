@@ -1,4 +1,4 @@
-QT += core gui widgets sql testlib
+QT += core gui widgets sql
 
 # Set the project name
 TARGET = ContactManager

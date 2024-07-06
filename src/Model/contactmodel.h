@@ -14,6 +14,7 @@ public:
     static Contact find(int id);
     static QVector<Contact> findAll();
     static int countAll();
+    static int getLastInsertedId();
 
 
     static QSqlQuery query();

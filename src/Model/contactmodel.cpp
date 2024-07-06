@@ -23,6 +23,7 @@ bool ContactModel::addContact(const Contact& contact)
         qDebug() << "Failed to add contact:" << query.lastError().text();
         return false;
     }
+
     return true;
 }
 
@@ -135,4 +136,16 @@ int ContactModel::countAll() {
     }
 
     return query.value(0).toInt();
+}
+
+int ContactModel::getLastInsertedId()
+{
+    QSqlDatabase db = DatabaseManager::getDatabase();
+    QSqlQuery query(db);
+
+    if (query.exec("SELECT last_insert_rowid()") && query.next()) {
+        return query.value(0).toInt();
+    }
+
+    return -1;
 }
