@@ -1,11 +1,11 @@
 #ifndef EASYCONTACTS_H
 #define EASYCONTACTS_H
 
-#include "src/Forms/contactstoreform.h"
-#include "src/Forms/oprogramu.h"
-#include "src/Model/contactmodel.h"
+#include "Forms/contactstoreform.h"
+#include "Forms/oprogramu.h"
 #include <QMainWindow>
 #include <QSortFilterProxyModel>
+#include <QSqlTableModel>
 
 
 namespace Ui {
@@ -43,12 +43,13 @@ private slots:
 
 private:
     Ui::EasyContacts *ui;
-    ContactModel *m_contactModel;
     QSortFilterProxyModel *m_proxyModel; // Proxy model za filtriranje
     ContactStoreForm *m_contactStoreForm;
     OProgramu *m_oProgramuForm;
+    QSqlTableModel *m_model;
 
-    void logError(const QString &message);
+    void setupTableView();
+    void loadContacts();
 
 };
 

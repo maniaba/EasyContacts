@@ -1,21 +1,22 @@
 #ifndef CONTACTMODEL_H
 #define CONTACTMODEL_H
 
-#include <QObject>
-#include <QSqlTableModel>
-#include <QSortFilterProxyModel>
-#include <QTableView>
+#include "Entity/contact.h"
+#include <QSqlQuery>
 
-class ContactModel : public QObject {
-    Q_OBJECT
+class ContactModel
+{
+
 public:
-    explicit ContactModel(QObject *parent = nullptr);
-    void setupTableView(QTableView *tableView, QSortFilterProxyModel *m_proxyModel);
-    void loadContacts();
-    QSqlTableModel *m_model;
+    static bool addContact(const Contact& contact);
+    static bool updateContact(int id, const Contact& contact);
+    static bool deleteContact(int id);
+    static Contact find(int id);
+    static QVector<Contact> findAll();
+    static int countAll();
 
-private:
-    QTableView *m_tableView;
+
+    static QSqlQuery query();
 };
 
 #endif // CONTACTMODEL_H

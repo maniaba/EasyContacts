@@ -1,4 +1,5 @@
 #include "contactstoreform.h"
+#include "src/Lib/logger.h"
 #include "ui_contactstoreform.h"
 #include "src/Database/databasemanager.h"
 #include <QSqlQuery>
@@ -35,6 +36,7 @@ void ContactStoreForm::onAccept() {
         if (!db.isValid() || !db.isOpen()) {
             qDebug() << "Database not open or invalid";
             QMessageBox::critical(this, tr("Error"), tr("Database not open or invalid"));
+            Logger::instance().logError("SQL->" + tr("Database not open or invalid"));
             return;
         }
 
@@ -54,6 +56,7 @@ void ContactStoreForm::onAccept() {
         if (!query.prepare(sql)) {
             qDebug() << "Failed to prepare query:" << query.lastError();
             QMessageBox::critical(this, tr("Error"), tr("Failed to prepare query: ") + query.lastError().text());
+            Logger::instance().logError("SQL->" + tr("Failed to prepare query: ") + query.lastError().text());
             return;
         }
 
@@ -83,6 +86,7 @@ void ContactStoreForm::onAccept() {
         } else {
             qDebug() << "Failed to execute query:" << query.lastError();
             QMessageBox::critical(this, tr("Error"), tr("Failed to add contact: ") + query.lastError().text());
+            Logger::instance().logError("SQL->" + tr("Failed to add contact: ") + query.lastError().text());
         }
     }
 }
@@ -91,19 +95,23 @@ bool ContactStoreForm::validateInput() {
     if (ui->lineEdit_ime->text().isEmpty() ||
         ui->lineEdit_prezime->text().isEmpty() ||
         ui->lineEdit_telefon->text().isEmpty()) {
-        QMessageBox::warning(this, tr("Validation Error"), tr("Name, Last Name, and Phone are required fields."));
+        QMessageBox::warning(this, tr("Greška pri validaciji podataka"), tr("Ime, prezime i broj telefona su obavezna polja."));
+        Logger::instance().logError("GV->" + ui->lineEdit_telefon->text() + " Ime, prezime i broj telefona su obavezna polja");
         return false;
     }
 
     static const QRegularExpression emailRegex("^\\S+@\\S+\\.\\S+$");
     if (!ui->lineEdit_email->text().isEmpty() && !emailRegex.match(ui->lineEdit_email->text()).hasMatch()) {
-        QMessageBox::warning(this, tr("Validation Error"), tr("Please enter a valid email address."));
+        QMessageBox::warning(this, tr("Greška pri validaciji podataka"), tr("Unesite ispravnu email adresu."));
+        Logger::instance().logError("GV->" + ui->lineEdit_telefon->text() + " Pogrešana email adresa");
         return false;
     }
 
     static const QRegularExpression phoneRegex("^\\+?[0-9]*$");
     if (!phoneRegex.match(ui->lineEdit_telefon->text()).hasMatch()) {
-        QMessageBox::warning(this, tr("Validation Error"), tr("Please enter a valid phone number."));
+        QMessageBox::warning(this, tr("Greška pri validaciji podataka"), tr("Molimo unesite validan broj telefona."));
+        Logger::instance().logError("GV->" + ui->lineEdit_telefon->text() + " Pogrešan broj telefona");
+
         return false;
     }
 

@@ -1,83 +1,138 @@
 #include "contactmodel.h"
-#include "qheaderview.h"
-#include "src/Database/databasemanager.h"
-#include "qsqlquery.h"
+#include "Database/databasemanager.h"
+#include <QSqlQuery>
 #include <QSqlError>
 #include <QDebug>
-#include <QSortFilterProxyModel>
 
-ContactModel::ContactModel(QObject *parent)
-    : QObject(parent), m_model(new QSqlTableModel(this, DatabaseManager::getDatabase())), m_tableView(nullptr) {
+bool ContactModel::addContact(const Contact& contact)
+{
+    QSqlDatabase db = DatabaseManager::getDatabase();
+    QSqlQuery query(db);
+    query.prepare("INSERT INTO contacts (firstName, lastName, email, phone, address, city, state, zipCode) "
+                  "VALUES (:firstName, :lastName, :email, :phone, :address, :city, :state, :zipCode)");
+    query.bindValue(":firstName", contact.firstName());
+    query.bindValue(":lastName", contact.lastName());
+    query.bindValue(":email", contact.email());
+    query.bindValue(":phone", contact.phone());
+    query.bindValue(":address", contact.address());
+    query.bindValue(":city", contact.city());
+    query.bindValue(":state", contact.state());
+    query.bindValue(":zipCode", contact.zipCode());
+
+    if (!query.exec()) {
+        qDebug() << "Failed to add contact:" << query.lastError().text();
+        return false;
+    }
+    return true;
 }
 
-void ContactModel::setupTableView(QTableView *tableView, QSortFilterProxyModel *m_proxyModel) {
-    m_tableView = tableView;
+bool ContactModel::updateContact(int id, const Contact& contact)
+{
+    QSqlDatabase db = DatabaseManager::getDatabase();
+    QSqlQuery query(db);
+    query.prepare("UPDATE contacts SET firstName = :firstName, lastName = :lastName, email = :email, phone = :phone, "
+                  "address = :address, city = :city, state = :state, zipCode = :zipCode WHERE id = :id");
+    query.bindValue(":firstName", contact.firstName());
+    query.bindValue(":lastName", contact.lastName());
+    query.bindValue(":email", contact.email());
+    query.bindValue(":phone", contact.phone());
+    query.bindValue(":address", contact.address());
+    query.bindValue(":city", contact.city());
+    query.bindValue(":state", contact.state());
+    query.bindValue(":zipCode", contact.zipCode());
+    query.bindValue(":id", id);
 
-    // Isključivanje vertikalnih zaglavlja
-    m_tableView->verticalHeader()->setVisible(false);
+    if (!query.exec()) {
+        qDebug() << "Failed to update contact:" << query.lastError().text();
+        return false;
+    }
+    return true;
+}
 
-    // Omogućavanje selektovanja celog reda
-    m_tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
-    // Onemogućavanje editovanja u tabeli
-    m_tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    // Onemogućavanje editovanja
-    m_model->setEditStrategy(QSqlTableModel::OnManualSubmit);
+bool ContactModel::deleteContact(int id)
+{
+    QSqlDatabase db = DatabaseManager::getDatabase();
+    QSqlQuery query(db);
+    query.prepare("DELETE FROM contacts WHERE id = :id");
+    query.bindValue(":id", id);
 
-    m_model->setTable("contacts");
+    if (!query.exec()) {
+        qDebug() << "Failed to delete contact:" << query.lastError().text();
+        return false;
+    }
+    return true;
+}
 
-    if (!m_model->select()) {
-        qDebug() << "Failed to select data:" << m_model->lastError().text();
-    } else {
-        qDebug() << "SQL query executed by model:" << m_model->query().executedQuery();
+
+QSqlQuery ContactModel::query() {
+    QSqlQuery query(DatabaseManager::getDatabase());
+    return query;
+}
+
+Contact ContactModel::find(int id) {
+    QSqlDatabase db = DatabaseManager::getDatabase();
+    QSqlQuery query(db);
+    query.prepare("SELECT id, firstName, lastName, email, phone, address, city, state, zipCode FROM contacts WHERE id = :id");
+    query.bindValue(":id", id);
+
+    if (!query.exec()) {
+        qDebug() << "Failed to find contact:" << query.lastError().text();
+        return Contact("", "", "", "", "", "", "", "");
     }
 
+    if (query.next()) {
+        return Contact(
+            query.value("id").toInt(),
+            query.value("firstName").toString(),
+            query.value("lastName").toString(),
+            query.value("email").toString(),
+            query.value("phone").toString(),
+            query.value("address").toString(),
+            query.value("city").toString(),
+            query.value("state").toString(),
+            query.value("zipCode").toString()
+            );
+    }
 
-    // Poveži model sa proxy modelom
-    m_proxyModel->setSourceModel(m_model); // Koristi m_contactModel direktno
-    m_proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive); // Postavi osjetljivost na velika/mala slova
-
-    // Poveži proxy model sa table view
-    m_tableView->setModel(m_proxyModel);
-
-
-    m_model->setHeaderData(1, Qt::Horizontal, tr("First Name"));
-    m_model->setHeaderData(2, Qt::Horizontal, tr("Last Name"));
-    m_model->setHeaderData(3, Qt::Horizontal, tr("Email"));
-    m_model->setHeaderData(4, Qt::Horizontal, tr("Phone"));
-    m_model->setHeaderData(5, Qt::Horizontal, tr("Address"));
-    m_model->setHeaderData(6, Qt::Horizontal, tr("City"));
-    m_model->setHeaderData(7, Qt::Horizontal, tr("State"));
-    m_model->setHeaderData(8, Qt::Horizontal, tr("Zip Code"));
-
-
-    m_tableView->setModel(m_proxyModel);
-
-
-    m_tableView->setColumnHidden(m_model->fieldIndex("id"), true);
-
-
-    // Automatsko prilagođavanje širine kolona
-    QHeaderView *header = m_tableView->horizontalHeader();
-    header->setSectionResizeMode(QHeaderView::Interactive);
-
-    // Postavljanje stretch faktora za određene kolone
-    header->setSectionResizeMode(5, QHeaderView::Stretch);  // Address
-    header->setSectionResizeMode(6, QHeaderView::Stretch);  // City
-    header->setSectionResizeMode(7, QHeaderView::Stretch);  // State
-
-    // Ostale kolone da se automatski prilagođavaju
-    header->setSectionResizeMode(1, QHeaderView::ResizeToContents);  // First Name
-    header->setSectionResizeMode(2, QHeaderView::ResizeToContents);  // Last Name
-    header->setSectionResizeMode(3, QHeaderView::ResizeToContents);  // Email
-    header->setSectionResizeMode(4, QHeaderView::ResizeToContents);  // Phone
-    header->setSectionResizeMode(8, QHeaderView::ResizeToContents);  // Zip Code
-
-
-    // Provjera prikaza table view
-    qDebug() << "Table view model set:" << m_tableView->model()->rowCount();
+    return Contact("", "", "", "", "", "", "", "");
 }
 
-void ContactModel::loadContacts() {
-    // Možeš dodati dodatne funkcionalnosti za učitavanje specifičnih podataka ili filtriranje ovdje
-    m_model->select();
+QVector<Contact> ContactModel::findAll() {
+    QSqlDatabase db = DatabaseManager::getDatabase();
+    QSqlQuery query(db);
+    QVector<Contact> contacts;
+
+    if (!query.exec("SELECT id, firstName, lastName, email, phone, address, city, state, zipCode FROM contacts")) {
+        qDebug() << "Failed to retrieve contacts:" << query.lastError().text();
+        return contacts;
+    }
+
+    while (query.next()) {
+        contacts.append(Contact(
+            query.value("id").toInt(),
+            query.value("firstName").toString(),
+            query.value("lastName").toString(),
+            query.value("email").toString(),
+            query.value("phone").toString(),
+            query.value("address").toString(),
+            query.value("city").toString(),
+            query.value("state").toString(),
+            query.value("zipCode").toString()
+            ));
+    }
+
+    return contacts;
+}
+
+int ContactModel::countAll() {
+    QSqlDatabase db = DatabaseManager::getDatabase();
+    QSqlQuery query(db);
+    query.prepare("SELECT COUNT(*) FROM contacts");
+
+    if (!query.exec() || !query.next()) {
+        qDebug() << "Failed to count contacts:" << query.lastError().text();
+        return 0;
+    }
+
+    return query.value(0).toInt();
 }

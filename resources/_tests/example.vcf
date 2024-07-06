@@ -1,0 +1,14 @@
+BEGIN:VCARD
+VERSION:3.0
+FN:Amir Horozović
+EMAIL:amir.horozovic@example.com
+TEL:+38761123456
+ADR:Ulica Zmaja od Bosne 1;Sarajevo;FBiH;71000
+END:VCARD
+BEGIN:VCARD
+VERSION:3.0
+FN:Lejla Knežević
+EMAIL:lejla.knezevic@example.com
+TEL:+38762234567
+ADR:Ulica Maršala Tita 10;Mostar;FBiH;88000
+END:VCARD
