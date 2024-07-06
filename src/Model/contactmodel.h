@@ -11,6 +11,7 @@ public:
     static bool addContact(const Contact& contact);
     static bool updateContact(int id, const Contact& contact);
     static bool deleteContact(int id);
+    static bool deleteAll();
     static Contact find(int id);
     static QVector<Contact> findAll();
     static int countAll();

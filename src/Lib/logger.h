@@ -13,13 +13,14 @@ public:
     static Logger& instance();
     void logError(const QString &message);
 
+    QFile logFile;
+
 private:
     Logger();
     ~Logger();
     Logger(const Logger&) = delete;
     Logger& operator=(const Logger&) = delete;
 
-    QFile logFile;
 };
 
 #endif // LOGGER_H

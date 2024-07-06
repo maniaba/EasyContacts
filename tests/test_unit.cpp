@@ -1,20 +1,23 @@
 #include <ContactModel.h>
 #include <Entity/contact.h>
 #include <QtTest>
+#include "Lib/logger.h"
 
-class TestContactModel : public QObject
+class TestUnit : public QObject
 {
     Q_OBJECT
 
 private slots:
-    void testAddContact();
-    void testDeleteContact();
+    void testContactModelAddContact();
+    void testContactModelDeleteContact();
+
+    void testLoggger();
 
 private:
     bool isContactInDatabase(const Contact &contact);
 };
 
-void TestContactModel::testAddContact()
+void TestUnit::testContactModelAddContact()
 {
     Contact contact(QString("ime"), QString("prezime"), QString("email.email.tests"), QString("061/123-456"), QString("Adresa"), QString("grad"), QString("FBIH"), QString("123456"));
 
@@ -28,7 +31,7 @@ void TestContactModel::testAddContact()
 }
 
 
-void TestContactModel::testDeleteContact()
+void TestUnit::testContactModelDeleteContact()
 {
     // Kreirajte Contact objekt
     Contact contact(QString("ime Deleted"), QString("prezime"), QString("email.email.tests"), QString("061/123-456"), QString("Adresa"), QString("grad"), QString("FBIH"), QString("123456"));
@@ -51,7 +54,7 @@ void TestContactModel::testDeleteContact()
 }
 
 
-bool TestContactModel::isContactInDatabase(const Contact &contact)
+bool TestUnit::isContactInDatabase(const Contact &contact)
 {
     QSqlQuery query = ContactModel::query();
 
@@ -68,6 +71,29 @@ bool TestContactModel::isContactInDatabase(const Contact &contact)
     return false;
 }
 
+void TestUnit::testLoggger()
+{
+    // Postavite Logger da koristi privremeni fajl
+    Logger &logger = Logger::instance();
 
-QTEST_MAIN(TestContactModel)
-#include "test_contactmodel.moc"
+
+    // Logirajte poruku o grešci
+    QString errorMessage = "Test error message";
+    logger.logError(errorMessage);
+
+    logger.logFile.close();
+
+    // Provjerite sadržaj log fajla
+    QVERIFY(logger.logFile.open(QIODevice::ReadOnly | QIODevice::Text));
+    QTextStream in(&logger.logFile);
+    QString content = in.readAll();
+    logger.logFile.close();
+
+    // Provjerite da li log fajl sadrži očekivanu poruku
+    QVERIFY(content.contains(errorMessage));
+
+}
+
+
+QTEST_MAIN(TestUnit)
+#include "test_unit.moc"

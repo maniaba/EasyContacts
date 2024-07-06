@@ -149,3 +149,17 @@ int ContactModel::getLastInsertedId()
 
     return -1;
 }
+
+
+bool ContactModel::deleteAll()
+{
+    QSqlDatabase db = DatabaseManager::getDatabase();
+    QSqlQuery query(db);
+
+    if (query.exec("DELETE FROM contacts")) {
+        return true;
+    } else {
+        qDebug() << "Failed to delete all contacts:" << query.lastError().text();
+        return false;
+    }
+}
