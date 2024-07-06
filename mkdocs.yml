@@ -1,0 +1,81 @@
+site_name: EasyContacts
+site_description: Dokumentacja za aplikaciju EasyContacts - aplikacija za upravljanje kontaktima
+
+theme:
+  name: material
+  logo: assets/app_icon.png
+  favicon: assets/favicon.png
+  icon:
+    repo: fontawesome/brands/github
+  font:
+    text: Raleway
+  palette:
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: easycontacts
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Prebaci na tamni mod
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: Prebaci na svijetli mod
+  features:
+    - navigation.instant
+    - content.code.copy
+    - navigation.footer
+    - content.action.edit
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - search.share
+
+extra:
+  homepage: https://maniaba.github.io/EasyContacts
+  generator: false
+
+  social:
+    - icon: material/github
+      link: https://github.com/maniaba/EasyContacts
+      name: GitHub
+    - icon: material/forum
+      link: https://ipi-nastava.ba/moodle/login/index.php
+      name: IPI
+
+site_url: https://maniaba.github.io/EasyContacts
+repo_url: https://github.com/maniaba/EasyContacts
+edit_uri: edit/main/docs/
+copyright: Copyright &copy; 2024 EasyContacts.
+
+markdown_extensions:
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      use_pygments: false
+  - admonition
+  - pymdownx.details
+
+extra_css:
+  - https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/styles/github.min.css
+  - assets/css/easycontacts.css
+  - assets/css/easycontacts_dark_mode.css
+
+extra_javascript:
+  - https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/highlight.min.js
+  - assets/js/hljs.js
+  - assets/js/curl.min.js
+
+plugins:
+  - search
+  - git-revision-date-localized:
+      enable_creation_date: true
+nav:
+  - Početna: index.md
+  - Instalacija: installation.md
+  - Korištenje: usage.md
+  - Rješavanje problema: troubleshooting.md
